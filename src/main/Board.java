@@ -14,26 +14,25 @@ import java.io.IOException;
 import java.util.Random;
 
 import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
 import game_objects.Ball;
 
-public class Board extends JPanel implements MouseListener{
+public class Board extends JPanel implements MouseListener {
 
-	private final int DELAY = 15;
+	private final int DELAY = 17;
 	private final int RADIUS = 100;
-	
-	// Punktestand
+	private final int MAX_SPEED = 100;
+
+	// Score
 	private int counter = 100;
 
 	// Display
 	private Rectangle bounds;
 
 	// Animation
-	private Timer updateBoard;
 	private Timer force;
 	private Timer hitDetection;
 
@@ -45,13 +44,6 @@ public class Board extends JPanel implements MouseListener{
 	public Board(Rectangle bounds) {
 		// init variables
 		this.bounds = bounds;
-		updateBoard = new Timer(DELAY, new ActionListener() {
-			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				repaint();
-			}
-		});
 		force = new Timer(DELAY, new ActionListener() {
 
 			@Override
@@ -59,6 +51,7 @@ public class Board extends JPanel implements MouseListener{
 
 				// Move Ball
 				moveBall(ball, speed, angle);
+				repaint();
 			}
 		});
 		hitDetection = new Timer(DELAY, new ActionListener() {
@@ -69,103 +62,103 @@ public class Board extends JPanel implements MouseListener{
 				hitsBounds(ball);
 			}
 		});
-		
-		//load image
+
+		// load image
 		BufferedImage img = null;
+		BufferedImage buffered = null;
 		try {
 			img = ImageIO.read(new File("images/egg.png"));
+			Image tmp = img.getScaledInstance(2 * RADIUS, 2 * RADIUS, Image.SCALE_DEFAULT);
+			buffered = new BufferedImage(2 * RADIUS, 2 * RADIUS, BufferedImage.TYPE_INT_ARGB);
+			buffered.getGraphics().drawImage(tmp, 0, 0, null);
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-		Image tmp = img.getScaledInstance(200, 200, Image.SCALE_DEFAULT);
-		BufferedImage buffered = new BufferedImage(200,200,BufferedImage.TYPE_INT_ARGB);
-		buffered.getGraphics().drawImage(tmp, 0, 0, null);
-		
+
 		ball = new Ball(RADIUS, buffered);
 		addMouseListener(this);
 
 		// start animation
 		ball.setPosition((int) bounds.getCenterX() - ball.getRadius(), (int) bounds.getCenterY() - ball.getRadius());
 		repaint();
-		updateBoard.start();
 		force.start();
 		hitDetection.start();
-		
+
 		setVisible(true);
 	}
 
 	private void moveBall(Ball ball, int speed, double directionAngle) {
-		
+
 		Point p = ball.getPosition();
-		int x = (int)Math.round(p.x + speed * Math.cos(Math.toRadians(directionAngle)));
-		int y = (int)Math.round(p.y + speed * Math.sin(Math.toRadians(directionAngle)));
-		
+		int x = (int) Math.round(p.x + speed * Math.cos(Math.toRadians(directionAngle)));
+		int y = (int) Math.round(p.y + speed * Math.sin(Math.toRadians(directionAngle)));
+
 		ball.setPosition(x, y);
 	}
-	
+
 	private boolean hitsBounds(Ball ball) {
 
 		boolean hit = false;
 		Rectangle hitbox = ball.getHitbox();
-		if (hitbox.x <= bounds.getX() || hitbox.x + hitbox.width >= bounds.getX() + bounds.getWidth()){
+		if (hitbox.x <= bounds.getX() || hitbox.x + hitbox.width >= bounds.getX() + bounds.getWidth()) {
 			angle = 180 - angle;
 			hit = true;
 		}
-		if (hitbox.y <= bounds.getY() || hitbox.y + hitbox.height >= bounds.getY() + bounds.getHeight()){
+		if (hitbox.y <= bounds.getY() || hitbox.y + hitbox.height >= bounds.getY() + bounds.getHeight()) {
 			angle = 360 - angle;
 			hit = true;
 		}
-		
+
 		return hit;
 	}
 
 	public void draw(Ball ball, Graphics g, JPanel panel) {
-		
+
 		Rectangle hitbox = ball.getHitbox();
 		int radius = ball.getRadius();
 		BufferedImage img = ball.getImage();
-		
-		//draw hitbox (only for debugging)
-//		g.drawRect(hitbox.x, hitbox.y, hitbox.width, hitbox.height);
-		
+
+		// draw hitbox (only for debugging)
+		// g.drawRect(hitbox.x, hitbox.y, hitbox.width, hitbox.height);
+
 		if (img != null)
 			g.drawImage(img, hitbox.x, hitbox.y, panel);
 		else {
 			g.fillOval(hitbox.x, hitbox.y, 2 * radius, 2 * radius);
 		}
 	}
+
+	@Override
 	public void mouseClicked(MouseEvent e) {
 		Point mouseLocation = e.getLocationOnScreen();
-		if(ball.getHitbox().contains(mouseLocation)) {
+		if (ball.getHitbox().contains(mouseLocation))
 			ballClicked();
-			// speed- maximum bei 100. Es kann aber sein, dass dieser Wert kompletter Schwachsinn ist.
-			speed += 1;
-			counter += 5;
-			if(speed >= 100) {
-				speed = 100;
-			}	
-		}
-		else { counter -= 5; 
-		count();
+		else {
+			counter -= 5;
+			if (counter == 0)
+				gameOver();
 		}
 	}
-	// Optionen falls man verloren hat.
-	public void count() {
-		if(counter == 0) {
-			speed = 0;
-			int reply = JOptionPane.showConfirmDialog(null, "Nochmal?", "Verloren", JOptionPane.YES_NO_OPTION);
-			
-			if(reply == JOptionPane.YES_OPTION) {
+
+	// options if game is over
+	public void gameOver() {
+		speed = 0;
+		int reply = JOptionPane.showConfirmDialog(null, "Nochmal?", "Verloren", JOptionPane.YES_NO_OPTION);
+
+		if (reply == JOptionPane.YES_OPTION) {
 			reset();
-			}
-			else {
-				System.exit(0);
-			}
+		} else {
+			System.exit(0);
 		}
 	}
+
 	public void ballClicked() {
 		int randNr = new Random().nextInt(361);
 		angle = randNr;
+
+		if (speed < MAX_SPEED)
+			speed += 1;
+		counter += 5;
 	}
 
 	@Override
@@ -176,10 +169,12 @@ public class Board extends JPanel implements MouseListener{
 	}
 
 	@Override
-	public void mouseEntered(MouseEvent arg0) {}
+	public void mouseEntered(MouseEvent arg0) {
+	}
 
 	@Override
-	public void mouseExited(MouseEvent arg0) {}
+	public void mouseExited(MouseEvent arg0) {
+	}
 
 	@Override
 	public void mousePressed(MouseEvent arg0) {
@@ -187,9 +182,10 @@ public class Board extends JPanel implements MouseListener{
 	}
 
 	@Override
-	public void mouseReleased(MouseEvent arg0) {}
-	
-	// Methode um alles auf Anfang zu setzen
+	public void mouseReleased(MouseEvent arg0) {
+	}
+
+	// method to reset all values
 	public void reset() {
 		speed = 10;
 		angle = 40;
