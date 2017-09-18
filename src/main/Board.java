@@ -33,8 +33,7 @@ public class Board extends JPanel implements MouseListener {
 	private Rectangle bounds;
 
 	// Animation
-	private Timer force;
-	private Timer hitDetection;
+	private Timer animation;
 
 	// Ball
 	private Ball ball;
@@ -44,22 +43,17 @@ public class Board extends JPanel implements MouseListener {
 	public Board(Rectangle bounds) {
 		// init variables
 		this.bounds = bounds;
-		force = new Timer(DELAY, new ActionListener() {
+		animation = new Timer(DELAY, new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
 
-				// Move Ball
+				//1. Move Ball
 				moveBall(ball, speed, angle);
-				repaint();
-			}
-		});
-		hitDetection = new Timer(DELAY, new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				// handle possible collision
+				//2. Handle possible collision
 				hitsBounds(ball);
+				//3. Update panel
+				repaint();
 			}
 		});
 
@@ -81,8 +75,7 @@ public class Board extends JPanel implements MouseListener {
 		// start animation
 		ball.setPosition((int) bounds.getCenterX() - ball.getRadius(), (int) bounds.getCenterY() - ball.getRadius());
 		repaint();
-		force.start();
-		hitDetection.start();
+		animation.start();
 
 		setVisible(true);
 	}
