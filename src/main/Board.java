@@ -176,12 +176,10 @@ public class Board extends JPanel implements MouseListener{
 	}
 
 	@Override
-	public void mouseEntered(MouseEvent arg0) {
-	}
+	public void mouseEntered(MouseEvent arg0) {}
 
 	@Override
-	public void mouseExited(MouseEvent arg0) {
-	}
+	public void mouseExited(MouseEvent arg0) {}
 
 	@Override
 	public void mousePressed(MouseEvent arg0) {
@@ -189,9 +187,8 @@ public class Board extends JPanel implements MouseListener{
 	}
 
 	@Override
-	public void mouseReleased(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-	}
+	public void mouseReleased(MouseEvent arg0) {}
+	
 	// Methode um alles auf Anfang zu setzen
 	public void reset() {
 		speed = 10;
