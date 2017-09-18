@@ -1,20 +1,20 @@
 package game_objects;
 
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
 
-public class Ball {
+public class Ball{
 
 	private int radius;
 	private Rectangle hitbox;
-	private Image img;
+	private BufferedImage img;
 
 	public Ball(int radius) {
 		this(radius, null);
 	}
 
-	public Ball(int radius, Image img) {
+	public Ball(int radius, BufferedImage img) {
 
 		this.radius = radius;
 		hitbox = new Rectangle(2 * radius, 2 * radius);
@@ -29,7 +29,7 @@ public class Ball {
 		return hitbox;
 	}
 	
-	public Image getImage(){
+	public BufferedImage getImage(){
 		return img;
 	}
 
