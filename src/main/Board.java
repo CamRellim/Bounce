@@ -11,18 +11,23 @@ import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Random;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
 import game_objects.Ball;
 
-public class Board extends JPanel{
+public class Board extends JPanel implements MouseListener{
 
 	private final int DELAY = 15;
 	private final int RADIUS = 100;
+	
+	// Punktestand
+	private int counter = 100;
 
 	// Display
 	private Rectangle bounds;
@@ -77,6 +82,7 @@ public class Board extends JPanel{
 		buffered.getGraphics().drawImage(tmp, 0, 0, null);
 		
 		ball = new Ball(RADIUS, buffered);
+		addMouseListener(this);
 
 		// start animation
 		ball.setPosition((int) bounds.getCenterX() - ball.getRadius(), (int) bounds.getCenterY() - ball.getRadius());
@@ -128,11 +134,68 @@ public class Board extends JPanel{
 			g.fillOval(hitbox.x, hitbox.y, 2 * radius, 2 * radius);
 		}
 	}
+	public void mouseClicked(MouseEvent e) {
+		Point mouseLocation = e.getLocationOnScreen();
+		if(ball.getHitbox().contains(mouseLocation)) {
+			ballClicked();
+			// speed- maximum bei 100. Es kann aber sein, dass dieser Wert kompletter Schwachsinn ist.
+			speed += 1;
+			counter += 5;
+			if(speed >= 100) {
+				speed = 100;
+			}	
+		}
+		else { counter -= 5; 
+		count();
+		}
+	}
+	// Optionen falls man verloren hat.
+	public void count() {
+		if(counter == 0) {
+			speed = 0;
+			int reply = JOptionPane.showConfirmDialog(null, "Nochmal?", "Verloren", JOptionPane.YES_NO_OPTION);
+			
+			if(reply == JOptionPane.YES_OPTION) {
+			reset();
+			}
+			else {
+				System.exit(0);
+			}
+		}
+	}
+	public void ballClicked() {
+		int randNr = new Random().nextInt(361);
+		angle = randNr;
+	}
 
 	@Override
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
 
 		draw(ball, g, this);
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent arg0) {
+	}
+
+	@Override
+	public void mouseExited(MouseEvent arg0) {
+	}
+
+	@Override
+	public void mousePressed(MouseEvent arg0) {
+		mouseClicked(arg0);
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+	}
+	// Methode um alles auf Anfang zu setzen
+	public void reset() {
+		speed = 10;
+		angle = 40;
+		counter = 100;
 	}
 }
