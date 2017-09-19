@@ -1,5 +1,6 @@
 package main;
 
+import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -47,6 +48,7 @@ public class Board extends JPanel implements MouseListener {
 	private Rectangle bounds;
 	private BufferedImage bg;
 	private BufferedImage play;
+	private Random rand;
 
 	// JLabels
 	private JLabel display_score;
@@ -132,7 +134,7 @@ public class Board extends JPanel implements MouseListener {
 		show_Multiplicator = new JLabel();
 		show_Multiplicator.setBounds(100, 300, 200, 200);
 		show_Multiplicator.setVisible(false);
-		Font multi = new Font("Arial", Font.BOLD, 80); // Fontstyle nur
+		Font multi = new Font("Comic Sans MS", Font.BOLD, 80); // Fontstyle nur
 														// vorübergehend
 		show_Multiplicator.setFont(multi);
 		add(show_Multiplicator);
@@ -141,7 +143,7 @@ public class Board extends JPanel implements MouseListener {
 		display_score = new JLabel();
 		display_score.setBounds(100, 50, 200, 200);
 		display_score.setText("Score: " + score);
-		Font font = new Font("Arial", Font.BOLD + Font.ITALIC, 30); // Schriftgröße
+		Font font = new Font("Comic Sans MS", Font.BOLD + Font.ITALIC, 30); // Schriftgröße
 																	// und -stil
 																	// werden
 																	// geändert
@@ -150,6 +152,7 @@ public class Board extends JPanel implements MouseListener {
 
 		setLayout(null); // set Layout as absoluteLayout
 	}
+	
 
 	public void initValues() {
 		speed = INITAL_SPEED;
@@ -287,6 +290,12 @@ public class Board extends JPanel implements MouseListener {
 				public void run() {
 					show_Multiplicator.setText("x" + multiplicator);
 					show_Multiplicator.setLocation(ball.getPosition());
+					rand = new Random();
+					float g = rand.nextFloat();
+					float r = rand.nextFloat();
+					float b = rand.nextFloat();
+					Color randColor = new Color(g, b, r);
+					show_Multiplicator.setForeground(randColor); // set Color random
 					show_Multiplicator.setVisible(true);
 					
 					try {
