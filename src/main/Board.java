@@ -1,7 +1,6 @@
 package main;
 
 import java.awt.Color;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Image;
@@ -32,10 +31,13 @@ import game_objects.Ball;
 
 public class Board extends JPanel implements MouseListener {
 
+	// Constants
 	private final int DELAY = 17;
 	private final int COUNTDOWN = 1000;
 	private final int RADIUS = 100;
 	private final int MAX_SPEED = 100;
+
+	// Initial Values
 	private final int INITAL_SPEED = 10;
 	private final int INITAL_SCORE = 0;
 	private final int INITIAL_COUNTDOWN = 30;
@@ -51,8 +53,9 @@ public class Board extends JPanel implements MouseListener {
 	private Random rand;
 
 	// JLabels
-	private JLabel display_score;
-	private JLabel show_Multiplicator;
+	private JLabel displayScore;
+	private JLabel remainingTime;
+	private JLabel showMultiplicator;
 
 	// Animation
 	private Timer animation;
@@ -67,6 +70,7 @@ public class Board extends JPanel implements MouseListener {
 	public Board(Rectangle bounds) {
 		// init variables
 		this.bounds = bounds;
+		rand = new Random();
 		initValues();
 
 		// load images
@@ -76,6 +80,49 @@ public class Board extends JPanel implements MouseListener {
 
 		// add ball
 		ball = new Ball(RADIUS, ballImg);
+
+		// JLabel for score
+		displayScore = new JLabel();
+		displayScore.setBounds(100, 50, 200, 200);
+		displayScore.setText("Score: " + score);
+		Font font = new Font("Comic Sans MS", Font.BOLD + Font.ITALIC, 30);
+		displayScore.setFont(font);
+		add(displayScore);
+
+		// init play/pause button
+		JLabel pause = new JLabel(new ImageIcon(play));
+		pause.setBounds(100, 200, 100, 100);
+		add(pause);
+		pause.addMouseListener(new MouseAdapter() {
+
+			public void mouseClicked(MouseEvent arg0) {
+				pauseGame();
+				int reply = JOptionPane.showConfirmDialog(null, "Weiterspielen?", "Punktestand; " + score,
+						JOptionPane.YES_NO_OPTION);
+				if (reply == JOptionPane.YES_OPTION) {
+					continueGame();
+				} else {
+					System.exit(0);
+				}
+			}
+		});
+
+		remainingTime = new JLabel();
+		remainingTime.setBounds(bounds.width / 2, 0, 200, 200);
+		remainingTime.setText(String.valueOf(gameTime));
+		remainingTime.setFont(font);
+		add(remainingTime);
+
+		// JLabel showMultiplicator()
+		showMultiplicator = new JLabel();
+		showMultiplicator.setBounds(100, 300, 200, 200);
+		showMultiplicator.setVisible(false);
+		Font multi = new Font("Comic Sans MS", Font.BOLD, 80);
+		showMultiplicator.setFont(multi);
+		add(showMultiplicator);
+
+		// set Layout as absoluteLayout
+		setLayout(null);
 
 		// add timers
 		animation = new Timer(DELAY, new ActionListener() {
@@ -97,6 +144,7 @@ public class Board extends JPanel implements MouseListener {
 			public void actionPerformed(ActionEvent e) {
 
 				gameTime--;
+				remainingTime.setText(String.valueOf(gameTime));
 				if (gameTime == 0)
 					gameOver();
 			}
@@ -111,52 +159,11 @@ public class Board extends JPanel implements MouseListener {
 		repaint();
 		animation.start();
 		countdown.start();
-
-		// init play/pause button
-		JLabel pause = new JLabel(new ImageIcon(play));
-		pause.setBounds(100, 250, 100, 100);
-		add(pause);
-		pause.addMouseListener(new MouseAdapter() {
-
-			public void mouseClicked(MouseEvent arg0) {
-				pauseGame();
-				int reply = JOptionPane.showConfirmDialog(null, "Weiterspielen?", "Punktestand; " + score,
-						JOptionPane.YES_NO_OPTION);
-				if (reply == JOptionPane.YES_OPTION) {
-					continueGame();
-				} else {
-					System.exit(0);
-				}
-			}
-		});
-
-		// JLabel showMultiplicator()
-		show_Multiplicator = new JLabel();
-		show_Multiplicator.setBounds(100, 300, 200, 200);
-		show_Multiplicator.setVisible(false);
-		Font multi = new Font("Comic Sans MS", Font.BOLD, 80); // Fontstyle nur
-														// vorübergehend
-		show_Multiplicator.setFont(multi);
-		add(show_Multiplicator);
-
-		// JLabel for score
-		display_score = new JLabel();
-		display_score.setBounds(100, 50, 200, 200);
-		display_score.setText("Score: " + score);
-		Font font = new Font("Comic Sans MS", Font.BOLD + Font.ITALIC, 30); // Schriftgröße
-																	// und -stil
-																	// werden
-																	// geändert
-		display_score.setFont(font);
-		add(display_score);
-
-		setLayout(null); // set Layout as absoluteLayout
 	}
-	
 
 	public void initValues() {
 		speed = INITAL_SPEED;
-		angle = new Random().nextInt(361);
+		angle = rand.nextInt(361);
 		score = INITAL_SCORE;
 		gameTime = INITIAL_COUNTDOWN;
 		multiplicator = 0;
@@ -264,10 +271,14 @@ public class Board extends JPanel implements MouseListener {
 	private void gameOver() {
 		pauseGame();
 
-		int reply = JOptionPane.showConfirmDialog(null, "Nochmal?", "Verloren", JOptionPane.YES_NO_OPTION);
+		int reply = JOptionPane.showConfirmDialog(null, "Nochmal?", "Zeit abgelaufen", JOptionPane.YES_NO_OPTION);
 		if (reply == JOptionPane.YES_OPTION) {
 			initValues();
 			continueGame();
+			ball.setPosition((int) bounds.getCenterX() - ball.getRadius(),
+					(int) bounds.getCenterY() - ball.getRadius());
+			displayScore.setText("Score: " + score);
+			remainingTime.setText(String.valueOf(gameTime));
 		} else {
 			System.exit(0);
 		}
@@ -276,38 +287,14 @@ public class Board extends JPanel implements MouseListener {
 	public void ballClicked() {
 		multiplicator++;
 
-		int randNr = new Random().nextInt(361);
-		angle = randNr;
+		angle = rand.nextInt(361);
 
 		if (speed < MAX_SPEED)
-			speed += 1;
+			speed += 5;
 		score += multiplicator;
-		display_score.setText("Score: " + String.valueOf(score));
-		if (multiplicator > 1) {
-			new Thread(new Runnable() {
-				
-				@Override
-				public void run() {
-					show_Multiplicator.setText("x" + multiplicator);
-					show_Multiplicator.setLocation(ball.getPosition());
-					rand = new Random();
-					float g = rand.nextFloat();
-					float r = rand.nextFloat();
-					float b = rand.nextFloat();
-					Color randColor = new Color(g, b, r);
-					show_Multiplicator.setForeground(randColor); // set Color random
-					show_Multiplicator.setVisible(true);
-					
-					try {
-						Thread.sleep(1000);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-					
-					show_Multiplicator.setVisible(false);
-				}
-			}).start();
-		}
+		displayScore.setText("Score: " + score);
+		if (multiplicator > 1)
+			showMultiplicator();
 	}
 
 	@Override
@@ -318,8 +305,32 @@ public class Board extends JPanel implements MouseListener {
 		draw(ball, g, this);
 	}
 
-	public void showMultiplicator() {
-		ball.getPosition();
+	private void showMultiplicator() {
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				showMultiplicator.setText("x" + multiplicator);
+				showMultiplicator.setLocation(ball.getPosition());
+
+				// set random color
+				float g = rand.nextFloat();
+				float r = rand.nextFloat();
+				float b = rand.nextFloat();
+				Color randColor = new Color(g, b, r);
+				showMultiplicator.setForeground(randColor);
+				showMultiplicator.setVisible(true);
+
+				// wait 1s for multiplicator to disappear
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+
+				showMultiplicator.setVisible(false);
+			}
+		}).start();
 	}
 
 	@Override
