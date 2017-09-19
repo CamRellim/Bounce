@@ -47,7 +47,10 @@ public class Board extends JPanel implements MouseListener {
 	private Rectangle bounds;
 	private BufferedImage bg;
 	private BufferedImage play;
+	
+	//JLabels
 	private JLabel display_score;
+	private JLabel show_Multiplicator;
 
 	// Animation
 	private Timer animation;
@@ -109,6 +112,7 @@ public class Board extends JPanel implements MouseListener {
 
 		// init play/pause button
 		JLabel pause = new JLabel(new ImageIcon(play));
+		pause.setBounds(100, 250, 100, 100);
 		add(pause);
 		pause.addMouseListener(new MouseAdapter() {
 
@@ -123,15 +127,24 @@ public class Board extends JPanel implements MouseListener {
 				}
 			}
 		});
+		
+		//JLabel showMultiplicator()
+		show_Multiplicator = new JLabel();
+		show_Multiplicator.setText("x" + multiplicator);
+		show_Multiplicator.setVisible(false);
+		Font multi = new Font("Arial", Font.BOLD, 80); // Fontstyle nur vorübergehend
+		show_Multiplicator.setFont(multi);
+		add(show_Multiplicator);
 
 		// JLabel for score
 		display_score = new JLabel();
-		display_score.setText("Score: " + String.valueOf(score));
+		display_score.setBounds(100, 50, 200, 200);
+		display_score.setText("Score: " + score);
 		Font font = new Font("Arial", Font.BOLD + Font.ITALIC, 30); // Schriftgröße und -stil werden geändert
 		display_score.setFont(font);
 		add(display_score);
 
-		setLayout(new FlowLayout());
+		setLayout(null); // set Layout as absoluteLayout
 	}
 
 	public void initValues() {
@@ -222,6 +235,7 @@ public class Board extends JPanel implements MouseListener {
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		Point mouseLocation = e.getLocationOnScreen();
+		show_Multiplicator.setVisible(false);
 		if (ball.getHitbox().contains(mouseLocation))
 			ballClicked();
 		else {
@@ -260,9 +274,13 @@ public class Board extends JPanel implements MouseListener {
 		angle = randNr;
 
 		if (speed < MAX_SPEED)
-			speed += 10;
+			speed += 1;
 		score += multiplicator;
 		display_score.setText("Score: " + String.valueOf(score));
+			if(multiplicator >= 0) {
+				show_Multiplicator.setVisible(true);
+				show_Multiplicator.setLocation(ball.getPosition());
+			}
 	}
 
 	@Override
@@ -272,20 +290,16 @@ public class Board extends JPanel implements MouseListener {
 		g.drawImage(bg, 0, 0, null);
 		draw(ball, g, this);
 	}
-
-	@Override
-	public void mouseEntered(MouseEvent arg0) {
+	public void showMultiplicator() {
+		ball.getPosition();
 	}
 
 	@Override
-	public void mouseExited(MouseEvent arg0) {
-	}
-
+	public void mouseEntered(MouseEvent arg0) {}
 	@Override
-	public void mousePressed(MouseEvent arg0) {
-	}
-
+	public void mouseExited(MouseEvent arg0) {}
 	@Override
-	public void mouseReleased(MouseEvent arg0) {
-	}
+	public void mousePressed(MouseEvent arg0) {}
+	@Override
+	public void mouseReleased(MouseEvent arg0) {}
 }
