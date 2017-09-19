@@ -17,12 +17,14 @@ public class MainFrame extends JFrame {
 		// init JFrame
 		setTitle("Bounce");
 		setResizable(false);
+		
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setExtendedState(JFrame.MAXIMIZED_BOTH);
 		setUndecorated(true);
 		setBounds(bounds);
 		add(new Board(bounds));
 		setVisible(true);
+		
 	}
 
 	public static void main(String[] args) {

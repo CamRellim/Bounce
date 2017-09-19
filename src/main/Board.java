@@ -1,5 +1,7 @@
 package main;
 
+import java.awt.BorderLayout;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Point;
@@ -8,7 +10,7 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
@@ -18,8 +20,10 @@ import java.util.Random;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
@@ -44,6 +48,8 @@ public class Board extends JPanel implements MouseListener {
 	// Display
 	private Rectangle bounds;
 	private BufferedImage bg;
+	private BufferedImage play;
+	private JLabel display_score;
 
 	// Animation
 	private Timer animation;
@@ -59,9 +65,18 @@ public class Board extends JPanel implements MouseListener {
 		// init variables
 		this.bounds = bounds;
 		initValues();
+		
+		 // JLabel for score
+		 display_score = new JLabel();
+		 display_score.setBounds(350, 100, 100, 100);
+		 Font font = new Font("Arial", Font.BOLD + Font.ITALIC, 30); // Schriftgröße und -stil werden geändert
+		 display_score.setFont(font);
+		 display_score.setHorizontalAlignment(JLabel.LEFT);
+		 add(display_score, BorderLayout.NORTH);
 
 		// load images
 		bg = getScaledBufferedImage("images/bg.png", bounds.width, bounds.height);
+		play = getScaledBufferedImage("images/play.png", 100, 100);
 		BufferedImage ballImg = getScaledBufferedImage("images/egg.png", 2*RADIUS, 2*RADIUS);
 
 		// add ball
@@ -101,6 +116,25 @@ public class Board extends JPanel implements MouseListener {
 		repaint();
 		animation.start();
 		countdown.start();
+		
+		// init play/pause button
+		 JLabel pause = new JLabel(new ImageIcon(play));
+		 pause.setBounds(100, 100, 100, 100);
+		 add(pause);
+		 pause.addMouseListener(new MouseAdapter(){
+
+			public void mouseClicked(MouseEvent arg0) {
+					pauseGame();
+		            int reply = JOptionPane.showConfirmDialog(null, "Weiterspielen?", "Punktestand; " + score, JOptionPane.YES_NO_OPTION);
+		              if(reply == JOptionPane.YES_OPTION)
+		              {
+		              	continueGame();
+		              }
+		              else {
+		            	  System.exit(0);
+		              }
+				}
+		});
 	}
 
 	public void initValues() {
@@ -231,6 +265,7 @@ public class Board extends JPanel implements MouseListener {
 		if (speed < MAX_SPEED)
 			speed += 10;
 		score += multiplicator;
+		display_score.setText("Score: " + String.valueOf(score));
 	}
 
 	@Override
