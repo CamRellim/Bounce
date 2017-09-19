@@ -4,8 +4,11 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
@@ -14,8 +17,12 @@ import java.io.IOException;
 import java.util.Random;
 
 import javax.imageio.ImageIO;
+import javax.swing.AbstractAction;
+import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
 import javax.swing.Timer;
 
 import game_objects.Ball;
@@ -25,9 +32,11 @@ public class Board extends JPanel implements MouseListener {
 	private final int DELAY = 17;
 	private final int RADIUS = 100;
 	private final int MAX_SPEED = 100;
+	private final int INITAL_SPEED = 10;
+	private final int INITAL_SCORE = 100;
 
 	// Score
-	private int counter = 100;
+	private int score = 100;
 
 	// Display
 	private Rectangle bounds;
@@ -37,8 +46,10 @@ public class Board extends JPanel implements MouseListener {
 
 	// Ball
 	private Ball ball;
-	private int speed = 10;
-	private int angle = 40;
+	private int speed;
+	private int angle;
+
+	BufferedImage bg;
 
 	public Board(Rectangle bounds) {
 		// init variables
@@ -48,14 +59,27 @@ public class Board extends JPanel implements MouseListener {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 
-				//1. Move Ball
+				// 1. Move Ball
 				moveBall(ball, speed, angle);
-				//2. Handle possible collision
+				// 2. Handle possible collision
 				hitsBounds(ball);
-				//3. Update panel
+				// 3. Update panel
 				repaint();
 			}
 		});
+
+		speed = INITAL_SPEED;
+		angle = new Random().nextInt(361);
+		
+		BufferedImage background = null;
+		try {
+			background = ImageIO.read(new File("images/bg.png"));
+			Image tmp = background.getScaledInstance(bounds.width, bounds.height, Image.SCALE_DEFAULT);
+			bg = new BufferedImage(bounds.width, bounds.height, BufferedImage.TYPE_INT_ARGB);
+			bg.getGraphics().drawImage(tmp, 0, 0, null);
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
 
 		// load image
 		BufferedImage img = null;
@@ -71,13 +95,30 @@ public class Board extends JPanel implements MouseListener {
 
 		ball = new Ball(RADIUS, buffered);
 		addMouseListener(this);
+		
+		//Add space key
+		 getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke((char)KeyEvent.VK_SPACE), "pause");
+	     getActionMap().put("pause", new AbstractAction() {
+	            @Override
+	            public void actionPerformed(ActionEvent e) {
+	                animation.stop();
+	                JOptionPane.showMessageDialog(null, "Weiterspielen?", "Punktestand; " + score, JOptionPane.INFORMATION_MESSAGE);
+	                animation.start();
+	            }
+	        });
+	     //Add escape key
+	     getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke((char)KeyEvent.VK_ESCAPE), "escape");
+	     getActionMap().put("escape", new AbstractAction() {
+	            @Override
+	            public void actionPerformed(ActionEvent e) {
+	                System.exit(0);
+	            }
+	        });
 
 		// start animation
 		ball.setPosition((int) bounds.getCenterX() - ball.getRadius(), (int) bounds.getCenterY() - ball.getRadius());
 		repaint();
 		animation.start();
-
-		setVisible(true);
 	}
 
 	private void moveBall(Ball ball, int speed, double directionAngle) {
@@ -127,8 +168,8 @@ public class Board extends JPanel implements MouseListener {
 		if (ball.getHitbox().contains(mouseLocation))
 			ballClicked();
 		else {
-			counter -= 5;
-			if (counter == 0)
+			score -= 5;
+			if (score == 0)
 				gameOver();
 		}
 	}
@@ -151,13 +192,14 @@ public class Board extends JPanel implements MouseListener {
 
 		if (speed < MAX_SPEED)
 			speed += 1;
-		counter += 5;
+		score += 5;
 	}
 
 	@Override
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
 
+		g.drawImage(bg, 0, 0, null);
 		draw(ball, g, this);
 	}
 
@@ -171,7 +213,6 @@ public class Board extends JPanel implements MouseListener {
 
 	@Override
 	public void mousePressed(MouseEvent arg0) {
-		mouseClicked(arg0);
 	}
 
 	@Override
@@ -180,8 +221,8 @@ public class Board extends JPanel implements MouseListener {
 
 	// method to reset all values
 	public void reset() {
-		speed = 10;
-		angle = 40;
-		counter = 100;
+		speed = INITAL_SPEED;
+		angle = new Random().nextInt(361);
+		score = INITAL_SCORE;
 	}
 }
