@@ -4,7 +4,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 
-public class Ball{
+public class Ball {
 
 	private int radius;
 	private Rectangle hitbox;
@@ -24,12 +24,12 @@ public class Ball{
 	public int getRadius() {
 		return radius;
 	}
-	
-	public Rectangle getHitbox(){
+
+	public Rectangle getHitbox() {
 		return hitbox;
 	}
-	
-	public BufferedImage getImage(){
+
+	public BufferedImage getImage() {
 		return img;
 	}
 

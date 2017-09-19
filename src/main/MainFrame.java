@@ -11,20 +11,20 @@ public class MainFrame extends JFrame {
 
 	public MainFrame() {
 		bounds = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
-		//smaller board
-//		bounds = new Rectangle(600, 600);
+		// smaller board
+		// bounds = new Rectangle(600, 600);
 
 		// init JFrame
 		setTitle("Bounce");
 		setResizable(false);
-		
+
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setExtendedState(JFrame.MAXIMIZED_BOTH);
 		setUndecorated(true);
 		setBounds(bounds);
 		add(new Board(bounds));
 		setVisible(true);
-		
+
 	}
 
 	public static void main(String[] args) {
