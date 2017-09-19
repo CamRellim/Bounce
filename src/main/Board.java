@@ -30,30 +30,44 @@ import game_objects.Ball;
 public class Board extends JPanel implements MouseListener {
 
 	private final int DELAY = 17;
+	private final int COUNTDOWN = 1000;
 	private final int RADIUS = 100;
 	private final int MAX_SPEED = 100;
 	private final int INITAL_SPEED = 10;
-	private final int INITAL_SCORE = 100;
+	private final int INITAL_SCORE = 0;
+	private final int INITIAL_COUNTDOWN = 30;
 
 	// Score
-	private int score = 100;
+	private int score;
+	private int multiplicator;
 
 	// Display
 	private Rectangle bounds;
+	private BufferedImage bg;
 
 	// Animation
 	private Timer animation;
+	private Timer countdown;
 
-	// Ball
+	// Game
 	private Ball ball;
 	private int speed;
 	private int angle;
-
-	BufferedImage bg;
+	private int gameTime;
 
 	public Board(Rectangle bounds) {
 		// init variables
 		this.bounds = bounds;
+		initValues();
+
+		// load images
+		bg = getScaledBufferedImage("images/bg.png", bounds.width, bounds.height);
+		BufferedImage ballImg = getScaledBufferedImage("images/egg.png", 2*RADIUS, 2*RADIUS);
+
+		// add ball
+		ball = new Ball(RADIUS, ballImg);
+
+		// add timers
 		animation = new Timer(DELAY, new ActionListener() {
 
 			@Override
@@ -67,58 +81,70 @@ public class Board extends JPanel implements MouseListener {
 				repaint();
 			}
 		});
+		countdown = new Timer(COUNTDOWN, new ActionListener() {
 
-		speed = INITAL_SPEED;
-		angle = new Random().nextInt(361);
-		
-		BufferedImage background = null;
-		try {
-			background = ImageIO.read(new File("images/bg.png"));
-			Image tmp = background.getScaledInstance(bounds.width, bounds.height, Image.SCALE_DEFAULT);
-			bg = new BufferedImage(bounds.width, bounds.height, BufferedImage.TYPE_INT_ARGB);
-			bg.getGraphics().drawImage(tmp, 0, 0, null);
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
+			@Override
+			public void actionPerformed(ActionEvent e) {
 
-		// load image
-		BufferedImage img = null;
-		BufferedImage buffered = null;
-		try {
-			img = ImageIO.read(new File("images/egg.png"));
-			Image tmp = img.getScaledInstance(2 * RADIUS, 2 * RADIUS, Image.SCALE_DEFAULT);
-			buffered = new BufferedImage(2 * RADIUS, 2 * RADIUS, BufferedImage.TYPE_INT_ARGB);
-			buffered.getGraphics().drawImage(tmp, 0, 0, null);
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
+				gameTime--;
+				if (gameTime == 0)
+					gameOver();
+			}
+		});
 
-		ball = new Ball(RADIUS, buffered);
+		// add mouselistener and keybindings
+		setupKeyBindings();
 		addMouseListener(this);
-		
-		//Add space key
-		 getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke((char)KeyEvent.VK_SPACE), "pause");
-	     getActionMap().put("pause", new AbstractAction() {
-	            @Override
-	            public void actionPerformed(ActionEvent e) {
-	                animation.stop();
-	                JOptionPane.showMessageDialog(null, "Weiterspielen?", "Punktestand; " + score, JOptionPane.INFORMATION_MESSAGE);
-	                animation.start();
-	            }
-	        });
-	     //Add escape key
-	     getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke((char)KeyEvent.VK_ESCAPE), "escape");
-	     getActionMap().put("escape", new AbstractAction() {
-	            @Override
-	            public void actionPerformed(ActionEvent e) {
-	                System.exit(0);
-	            }
-	        });
 
-		// start animation
+		// start game
 		ball.setPosition((int) bounds.getCenterX() - ball.getRadius(), (int) bounds.getCenterY() - ball.getRadius());
 		repaint();
 		animation.start();
+		countdown.start();
+	}
+
+	public void initValues() {
+		speed = INITAL_SPEED;
+		angle = new Random().nextInt(361);
+		score = INITAL_SCORE;
+		gameTime = INITIAL_COUNTDOWN;
+		multiplicator = 0;
+	}
+
+	private BufferedImage getScaledBufferedImage(String filename, int width, int height) {
+
+		BufferedImage img;
+		try {
+			img = ImageIO.read(new File(filename));
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+
+		Image tmp = img.getScaledInstance(width, height, Image.SCALE_DEFAULT);
+		BufferedImage buffered = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		buffered.getGraphics().drawImage(tmp, 0, 0, null);
+
+		return buffered;
+	}
+
+	private void setupKeyBindings() {
+		// Add space key
+		getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke((char) KeyEvent.VK_SPACE), "pause");
+		getActionMap().put("pause", new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				pauseGame();
+			}
+		});
+		// Add escape key
+		getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke((char) KeyEvent.VK_ESCAPE), "escape");
+		getActionMap().put("escape", new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				System.exit(0);
+			}
+		});
 	}
 
 	private void moveBall(Ball ball, int speed, double directionAngle) {
@@ -168,31 +194,43 @@ public class Board extends JPanel implements MouseListener {
 		if (ball.getHitbox().contains(mouseLocation))
 			ballClicked();
 		else {
-			score -= 5;
-			if (score == 0)
-				gameOver();
+			multiplicator = 0;
+			speed = INITAL_SPEED;
 		}
 	}
 
-	// options if game is over
-	public void gameOver() {
-		speed = 0;
-		int reply = JOptionPane.showConfirmDialog(null, "Nochmal?", "Verloren", JOptionPane.YES_NO_OPTION);
+	private void pauseGame() {
+		animation.stop();
+		countdown.stop();
+	}
+	
+	private void continueGame(){
+		animation.start();
+		countdown.start();
+	}
 
+	// options if game is over
+	private void gameOver() {
+		pauseGame();
+
+		int reply = JOptionPane.showConfirmDialog(null, "Nochmal?", "Verloren", JOptionPane.YES_NO_OPTION);
 		if (reply == JOptionPane.YES_OPTION) {
-			reset();
+			initValues();
+			continueGame();
 		} else {
 			System.exit(0);
 		}
 	}
 
 	public void ballClicked() {
+		multiplicator++;
+
 		int randNr = new Random().nextInt(361);
 		angle = randNr;
 
 		if (speed < MAX_SPEED)
-			speed += 1;
-		score += 5;
+			speed += 10;
+		score += multiplicator;
 	}
 
 	@Override
@@ -217,12 +255,5 @@ public class Board extends JPanel implements MouseListener {
 
 	@Override
 	public void mouseReleased(MouseEvent arg0) {
-	}
-
-	// method to reset all values
-	public void reset() {
-		speed = INITAL_SPEED;
-		angle = new Random().nextInt(361);
-		score = INITAL_SCORE;
 	}
 }
