@@ -145,14 +145,20 @@ public class Board extends JPanel implements MouseListener {
 
 				gameTime--;
 				remainingTime.setText(String.valueOf(gameTime));
+				if(gameTime <= 5) {
+					remainingTime.setForeground(Color.RED); // change Color to red when just a few secs are left
+				}
+				else {
+					remainingTime.setForeground(Color.BLACK); // else set Color to black
+				}
 				if (gameTime == 0)
 					gameOver();
-			}
+				}
 		});
 
 		// add mouselistener and keybindings
-		setupKeyBindings();
-		addMouseListener(this);
+		 setupKeyBindings();
+		 addMouseListener(this);
 
 		// start game
 		ball.setPosition((int) bounds.getCenterX() - ball.getRadius(), (int) bounds.getCenterY() - ball.getRadius());
@@ -286,7 +292,6 @@ public class Board extends JPanel implements MouseListener {
 
 	public void ballClicked() {
 		multiplicator++;
-
 		angle = rand.nextInt(361);
 
 		if (speed < MAX_SPEED)
@@ -319,7 +324,11 @@ public class Board extends JPanel implements MouseListener {
 				float b = rand.nextFloat();
 				Color randColor = new Color(g, b, r);
 				showMultiplicator.setForeground(randColor);
+				
+				int addOn = (2 * multiplicator); // increase the remaining time
+				gameTime += addOn;
 				showMultiplicator.setVisible(true);
+				remainingTime.setText("+ " + addOn); // show additional time for one sec
 
 				// wait 1s for multiplicator to disappear
 				try {
@@ -329,23 +338,17 @@ public class Board extends JPanel implements MouseListener {
 				}
 
 				showMultiplicator.setVisible(false);
+				remainingTime.setText(String.valueOf(gameTime)); // change JLabel back to the remaining time
 			}
 		}).start();
 	}
 
 	@Override
-	public void mouseEntered(MouseEvent arg0) {
-	}
-
+	public void mouseEntered(MouseEvent arg0) {}
 	@Override
-	public void mouseExited(MouseEvent arg0) {
-	}
-
+	public void mouseExited(MouseEvent arg0) {}
 	@Override
-	public void mousePressed(MouseEvent arg0) {
-	}
-
+	public void mousePressed(MouseEvent arg0) {}
 	@Override
-	public void mouseReleased(MouseEvent arg0) {
-	}
+	public void mouseReleased(MouseEvent arg0) {}
 }
