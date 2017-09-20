@@ -28,6 +28,7 @@ import javax.swing.KeyStroke;
 import javax.swing.Timer;
 
 import game_objects.Ball;
+import utils.CollisionType;
 
 public class Board extends JPanel implements MouseListener {
 
@@ -130,10 +131,25 @@ public class Board extends JPanel implements MouseListener {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 
-				// 1. Move Ball
-				moveBall(ball, speed, angle);
-				// 2. Handle possible collision
-				hitsBounds(ball);
+				// 1. Handle possible collision
+				CollisionType collision = ball.hitsBounds(bounds);
+				if (collision != null)
+					switch (collision) {
+					case HORIZONTAL:
+						angle = 180 - angle;
+						break;
+					case VERTICAL:
+						angle = 360 - angle;
+						break;
+					case BOTH:
+						angle = 180 - angle;
+						angle = 360 - angle;
+						break;
+					default:
+						break;
+					}
+				// 2. Move Ball
+				ball.move(speed, angle);
 				// 3. Update panel
 				repaint();
 			}
@@ -145,20 +161,22 @@ public class Board extends JPanel implements MouseListener {
 
 				gameTime--;
 				remainingTime.setText(String.valueOf(gameTime));
-				if(gameTime <= 5) {
-					remainingTime.setForeground(Color.RED); // change Color to red when just a few secs are left
-				}
-				else {
-					remainingTime.setForeground(Color.BLACK); // else set Color to black
+				if (gameTime <= 5) {
+					remainingTime.setForeground(Color.RED); // change Color to
+															// red when just a
+															// few secs are left
+				} else {
+					remainingTime.setForeground(Color.BLACK); // else set Color
+																// to black
 				}
 				if (gameTime == 0)
 					gameOver();
-				}
+			}
 		});
 
 		// add mouselistener and keybindings
-		 setupKeyBindings();
-		 addMouseListener(this);
+		setupKeyBindings();
+		addMouseListener(this);
 
 		// start game
 		ball.setPosition((int) bounds.getCenterX() - ball.getRadius(), (int) bounds.getCenterY() - ball.getRadius());
@@ -169,7 +187,8 @@ public class Board extends JPanel implements MouseListener {
 
 	public void initValues() {
 		speed = INITAL_SPEED;
-		angle = rand.nextInt(361);
+		// angle = rand.nextInt(361);
+		angle = 0;
 		score = INITAL_SCORE;
 		gameTime = INITIAL_COUNTDOWN;
 		multiplicator = 0;
@@ -209,47 +228,6 @@ public class Board extends JPanel implements MouseListener {
 				System.exit(0);
 			}
 		});
-	}
-
-	private void moveBall(Ball ball, int speed, double directionAngle) {
-
-		Point p = ball.getPosition();
-		int x = (int) Math.round(p.x + speed * Math.cos(Math.toRadians(directionAngle)));
-		int y = (int) Math.round(p.y + speed * Math.sin(Math.toRadians(directionAngle)));
-
-		ball.setPosition(x, y);
-	}
-
-	private boolean hitsBounds(Ball ball) {
-
-		boolean hit = false;
-		Rectangle hitbox = ball.getHitbox();
-		if (hitbox.x <= bounds.getX() || hitbox.x + hitbox.width >= bounds.getX() + bounds.getWidth()) {
-			angle = 180 - angle;
-			hit = true;
-		}
-		if (hitbox.y <= bounds.getY() || hitbox.y + hitbox.height >= bounds.getY() + bounds.getHeight()) {
-			angle = 360 - angle;
-			hit = true;
-		}
-
-		return hit;
-	}
-
-	public void draw(Ball ball, Graphics g, JPanel panel) {
-
-		Rectangle hitbox = ball.getHitbox();
-		int radius = ball.getRadius();
-		BufferedImage img = ball.getImage();
-
-		// draw hitbox (only for debugging)
-		// g.drawRect(hitbox.x, hitbox.y, hitbox.width, hitbox.height);
-
-		if (img != null)
-			g.drawImage(img, hitbox.x, hitbox.y, panel);
-		else {
-			g.fillOval(hitbox.x, hitbox.y, 2 * radius, 2 * radius);
-		}
 	}
 
 	@Override
@@ -307,7 +285,7 @@ public class Board extends JPanel implements MouseListener {
 		super.paintComponent(g);
 
 		g.drawImage(bg, 0, 0, null);
-		draw(ball, g, this);
+		ball.draw(g, this);
 	}
 
 	private void showMultiplicator() {
@@ -324,11 +302,12 @@ public class Board extends JPanel implements MouseListener {
 				float b = rand.nextFloat();
 				Color randColor = new Color(g, b, r);
 				showMultiplicator.setForeground(randColor);
-				
+
 				int addOn = (2 * multiplicator); // increase the remaining time
 				gameTime += addOn;
 				showMultiplicator.setVisible(true);
-				remainingTime.setText("+ " + addOn); // show additional time for one sec
+				remainingTime.setText("+ " + addOn); // show additional time for
+														// one sec
 
 				// wait 1s for multiplicator to disappear
 				try {
@@ -338,17 +317,29 @@ public class Board extends JPanel implements MouseListener {
 				}
 
 				showMultiplicator.setVisible(false);
-				remainingTime.setText(String.valueOf(gameTime)); // change JLabel back to the remaining time
+				remainingTime.setText(String.valueOf(gameTime)); // change
+																	// JLabel
+																	// back to
+																	// the
+																	// remaining
+																	// time
 			}
 		}).start();
 	}
 
 	@Override
-	public void mouseEntered(MouseEvent arg0) {}
+	public void mouseEntered(MouseEvent arg0) {
+	}
+
 	@Override
-	public void mouseExited(MouseEvent arg0) {}
+	public void mouseExited(MouseEvent arg0) {
+	}
+
 	@Override
-	public void mousePressed(MouseEvent arg0) {}
+	public void mousePressed(MouseEvent arg0) {
+	}
+
 	@Override
-	public void mouseReleased(MouseEvent arg0) {}
+	public void mouseReleased(MouseEvent arg0) {
+	}
 }
