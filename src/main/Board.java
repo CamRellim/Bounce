@@ -29,6 +29,7 @@ import javax.swing.Timer;
 
 import game_objects.Ball;
 import utils.CollisionType;
+import utils.Sounds;
 
 public class Board extends JPanel implements MouseListener {
 
@@ -52,6 +53,12 @@ public class Board extends JPanel implements MouseListener {
 	private BufferedImage bg;
 	private BufferedImage play;
 	private Random rand;
+	private Sounds sounds;
+	
+	//Sounds
+	private File hit = new File("C:\\Users\\luis_\\git\\Bounce\\sounds\\boing.wav");
+	private File lost = new File("C:\\Users\\luis_\\git\\Bounce\\sounds\\Sad_Trombone.wav");
+	// suitable sound for TICKTOCK not found yet
 
 	// JLabels
 	private JLabel displayScore;
@@ -81,6 +88,9 @@ public class Board extends JPanel implements MouseListener {
 
 		// add ball
 		ball = new Ball(RADIUS, ballImg);
+		
+		// add sound
+		sounds = new Sounds();
 
 		// JLabel for score
 		displayScore = new JLabel();
@@ -233,8 +243,14 @@ public class Board extends JPanel implements MouseListener {
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		Point mouseLocation = e.getLocationOnScreen();
-		if (ball.getHitbox().contains(mouseLocation))
+		if (ball.getHitbox().contains(mouseLocation)) {
 			ballClicked();
+				try {
+					sounds.play(hit);
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
+		}	
 		else {
 			multiplicator = 0;
 			speed = INITAL_SPEED;
@@ -254,7 +270,11 @@ public class Board extends JPanel implements MouseListener {
 	// options if game is over
 	private void gameOver() {
 		pauseGame();
-
+			try {
+				sounds.play(lost);
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
 		int reply = JOptionPane.showConfirmDialog(null, "Nochmal?", "Zeit abgelaufen", JOptionPane.YES_NO_OPTION);
 		if (reply == JOptionPane.YES_OPTION) {
 			initValues();
