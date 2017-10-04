@@ -28,8 +28,7 @@ import javax.swing.KeyStroke;
 import javax.swing.Timer;
 
 import game_objects.Ball;
-import utils.CollisionType;
-import utils.Sounds;
+import utils.*;
 
 public class Board extends JPanel implements MouseListener {
 
@@ -54,6 +53,7 @@ public class Board extends JPanel implements MouseListener {
 	private BufferedImage play;
 	private Random rand;
 	private Sounds sounds;
+	private Highscore highscore;
 	
 	//Sounds
 	private File hit = new File("C:\\Users\\luis_\\git\\Bounce\\sounds\\boing.wav");
@@ -62,6 +62,7 @@ public class Board extends JPanel implements MouseListener {
 
 	// JLabels
 	private JLabel displayScore;
+	private JLabel displayHighscore;
 	private JLabel remainingTime;
 	private JLabel showMultiplicator;
 
@@ -92,13 +93,20 @@ public class Board extends JPanel implements MouseListener {
 		// add sound
 		sounds = new Sounds();
 
-		// JLabel for score
+		// JLabels for scores
 		displayScore = new JLabel();
 		displayScore.setBounds(100, 50, 200, 200);
 		displayScore.setText("Score: " + score);
 		Font font = new Font("Comic Sans MS", Font.BOLD + Font.ITALIC, 30);
 		displayScore.setFont(font);
 		add(displayScore);
+		
+		displayHighscore = new JLabel();
+		displayHighscore.setBounds(100, 15, 400, 200);
+		highscore = new Highscore();
+		displayHighscore.setText("Highscore: " + String.valueOf(highscore.hs));
+		displayHighscore.setFont(font);
+		add(displayHighscore);
 
 		// init play/pause button
 		JLabel pause = new JLabel(new ImageIcon(play));
@@ -223,13 +231,13 @@ public class Board extends JPanel implements MouseListener {
 
 	private void setupKeyBindings() {
 		// Add space key
-		getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke((char) KeyEvent.VK_SPACE), "pause");
-		getActionMap().put("pause", new AbstractAction() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				pauseGame();
-			}
-		});
+//		getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke((char) KeyEvent.VK_SPACE), "pause");
+//		getActionMap().put("pause", new AbstractAction() {
+//			@Override
+//			public void actionPerformed(ActionEvent e) {
+//				pauseGame();
+//			}
+//		});
 		// Add escape key
 		getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke((char) KeyEvent.VK_ESCAPE), "escape");
 		getActionMap().put("escape", new AbstractAction() {
@@ -275,6 +283,11 @@ public class Board extends JPanel implements MouseListener {
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
+			// change textdoc if score is greater than previous highscore
+			if(highscore.compareScore(score)) {
+				highscore.writeText(score);
+			}
+			
 		int reply = JOptionPane.showConfirmDialog(null, "Nochmal?", "Zeit abgelaufen", JOptionPane.YES_NO_OPTION);
 		if (reply == JOptionPane.YES_OPTION) {
 			initValues();
@@ -295,6 +308,12 @@ public class Board extends JPanel implements MouseListener {
 		if (speed < MAX_SPEED)
 			speed += 5;
 		score += multiplicator;
+		
+		// check if current score is greater than previous highscore
+//		if (highscore.compareScore(score)) {
+//			displayHighscore.setText("Highscore: " + String.valueOf(score));
+//		}
+		
 		displayScore.setText("Score: " + score);
 		if (multiplicator > 1)
 			showMultiplicator();
@@ -326,8 +345,7 @@ public class Board extends JPanel implements MouseListener {
 				int addOn = (2 * multiplicator); // increase the remaining time
 				gameTime += addOn;
 				showMultiplicator.setVisible(true);
-				remainingTime.setText("+ " + addOn); // show additional time for
-														// one sec
+				remainingTime.setText("+ " + addOn); // show additional time for one sec
 
 				// wait 1s for multiplicator to disappear
 				try {
@@ -337,12 +355,7 @@ public class Board extends JPanel implements MouseListener {
 				}
 
 				showMultiplicator.setVisible(false);
-				remainingTime.setText(String.valueOf(gameTime)); // change
-																	// JLabel
-																	// back to
-																	// the
-																	// remaining
-																	// time
+				remainingTime.setText(String.valueOf(gameTime)); // change JLabel back to the remaining time
 			}
 		}).start();
 	}
