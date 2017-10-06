@@ -30,6 +30,7 @@ import javax.swing.Timer;
 import game_objects.Ball;
 import utils.*;
 
+@SuppressWarnings("serial")
 public class Board extends JPanel implements MouseListener {
 
 	// Constants
@@ -304,7 +305,12 @@ public class Board extends JPanel implements MouseListener {
 	public void ballClicked() {
 		multiplicator++;
 		angle = rand.nextInt(361);
-
+		
+		// change color of score if score is greater than highscore
+		if(highscore.reachedHighscore(score)) {
+			displayScore.setForeground(Color.YELLOW);
+		}
+		
 		if (speed < MAX_SPEED)
 			speed += 5;
 		score += multiplicator;

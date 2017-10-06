@@ -10,7 +10,7 @@ public class Highscore {
 
 	public Highscore() {
 		// just in case if try block is not working
-		String score = "0";
+		String score = null;
 		
 		// Reader
 		try {
@@ -33,6 +33,14 @@ public class Highscore {
 			return false;
 		}
 	}
+	// bool to check if score is greater than highscore
+	public boolean reachedHighscore(int score) {
+		if(score >= hs) {
+			return true;
+		}
+		else return false;
+	}
+	
 	public void writeText(int newScore) {
 		// Writer
 		try {

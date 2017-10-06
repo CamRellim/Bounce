@@ -17,6 +17,7 @@ public class MainFrame extends JFrame {
 		// init JFrame
 		setTitle("Bounce");
 		setResizable(false);
+		// this.setIconImage(Toolkit.getDefaultToolkit().getImage("images/egg.png"));
 
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setExtendedState(JFrame.MAXIMIZED_BOTH);
